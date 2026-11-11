@@ -1,0 +1,36 @@
+{
+  "name": "job-hunt-chrome-plugin",
+  "version": "1.0.0",
+  "description": "Chrome Extension for AI-powered Job Application Autofill using Groq API",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "package": "npm run build && powershell -Command \"if (-not (Test-Path release)) { New-Item -ItemType Directory -Path release }; Compress-Archive -Path dist/* -DestinationPath release/jobhunt-ai-v1.0.0.zip -Force\"",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "chrome-extension",
+    "manifest-v3",
+    "job-hunt",
+    "autofill",
+    "groq-api",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "^0.0.308",
+    "@types/node": "^22.13.9",
+    "autoprefixer": "^10.4.21",
+    "lucide": "^0.477.0",
+    "playwright": "^1.65.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vitest": "^5.1.0"
+  }
+}
