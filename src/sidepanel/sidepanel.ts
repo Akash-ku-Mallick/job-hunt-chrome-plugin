@@ -536,6 +536,9 @@ async function resolveFieldValues() {
       case 'GITHUB_URL':
         field.suggestedValue = currentProfile.personal.githubUrl;
         break;
+      case 'PORTFOLIO_URL':
+        field.suggestedValue = currentProfile.personal.portfolioUrl || currentProfile.personal.githubUrl || currentProfile.personal.linkedinUrl;
+        break;
       case 'WORK_AUTHORIZATION':
         field.suggestedValue = currentProfile.workAuthorization.authorizedInCountry ? 'Yes' : 'No';
         break;
@@ -705,6 +708,24 @@ async function handleAutofill() {
   if (!tab?.id) return;
 
   await ensureContentScriptReady(tab.id);
+
+  // Auto-generate answers for any custom essay fields that don't have answers yet
+  const blankEssays = detectedFields.filter(
+    f => f.classification === 'CUSTOM_ESSAY' && (!f.suggestedValue || f.suggestedValue.trim().length === 0)
+  );
+
+  if (blankEssays.length > 0 && currentSettings.groqApiKey) {
+    setStatus(`Synthesizing ${blankEssays.length} AI answer(s)...`, 'loading');
+    for (const essay of blankEssays) {
+      try {
+        const answer = await generateAiAnswer(essay.label, 'Balanced and professional');
+        essay.suggestedValue = answer;
+      } catch (err) {
+        console.warn('[JobHunt AI] Automatic essay answer error:', err);
+      }
+    }
+    renderFieldsList();
+  }
 
   const fieldsToFill = detectedFields
     .filter(f => f.suggestedValue && f.suggestedValue.trim().length > 0)

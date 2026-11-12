@@ -38,21 +38,10 @@ To prevent documentation drift as this codebase evolves:
 - **Side Panel Triggering:** Use `chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })` inside the service worker. (Note: It is `openPanelOnActionClick`, NOT `openPanelOnActionIconClick` which throws a synchronous TypeError).
 
 ### B. Security & API Key Egress Scoping
-- **Strict Host Permission Scoping:** Host permissions in `manifest.json` are strictly scoped to:
-  ```json
-  "host_permissions": [
-    "https://api.groq.com/*",
-    "https://*.greenhouse.io/*",
-    "https://*.lever.co/*",
-    "https://*.ashbyhq.com/*",
-    "https://*.myworkdayjobs.com/*",
-    "https://*.linkedin.com/*",
-    "https://*.indeed.com/*",
-    "https://*.huntingcube.ai/*",
-    "https://huntingcube.ai/*"
-  ]
-  ```
-- **Universal ATS Dynamic Injection:** Uses `activeTab` + `scripting` API to dynamically inject `content.js` when users trigger analysis on new or unlisted job portals.
+- **Universal ATS Ingestion & Host Permissions:** Host permissions in `manifest.json` use `<all_urls>` for universal ATS portal coverage (BambooHR, Greenhouse, Lever, Ashby, Workday, HuntingCube, SmartRecruiters, Workable, etc.) and direct Groq/Google API communication.
+- **Honeypot Trap Protection:** Form detector actively filters anti-spam honeypot inputs (e.g. `nickname_hpcsaf`, `leave this field blank`, reCAPTCHA hidden tokens) to safeguard candidate applications against bot rejection.
+- **Auto-Expand Apply Forms:** Automatically clicks "Apply for This Job" on job overview pages (like BambooHR) when application inputs are behind an accordion or button.
+- **Auto-Synthesize Blank Essays:** When clicking "Autofill fields", any unanswered essay questions are automatically synthesized using Groq LPU inference before DOM dispatch. No copy-paste needed.
 - **API Key Lifecycle & Protection:**
   - Store the user's Groq API key strictly in sandboxed `chrome.storage.local`.
   - Keys are sent **only** as `Authorization: Bearer <KEY>` headers directly to `https://api.groq.com/*`.

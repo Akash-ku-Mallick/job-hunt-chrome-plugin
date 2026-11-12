@@ -42,6 +42,12 @@ export const ATS_CONFIGS: AtsSelectorConfig[] = [
     jdContainer: 'main, article, .apply-card, div',
     formContainer: '#apply-form, form.apply-card, form',
   },
+  {
+    name: 'BambooHR',
+    hostPattern: 'bamboohr.com',
+    jdContainer: 'main, article, div',
+    formContainer: 'form, .MuiFormControl-root',
+  },
 ];
 
 export function getAtsConfig(hostname: string): AtsSelectorConfig | undefined {

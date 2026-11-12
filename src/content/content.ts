@@ -11,9 +11,26 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message.type === 'ANALYZE_PAGE') {
-    const jd = scrapeJobDescription();
-    const fields = detectFormFields();
-    sendResponse({ success: true, payload: { jd, fields } });
+    (async () => {
+      const jd = scrapeJobDescription();
+      let fields = detectFormFields();
+
+      // If no form inputs are currently visible, check for an "Apply for This Job" button (e.g. BambooHR)
+      if (fields.length === 0) {
+        const applyBtn = Array.from(document.querySelectorAll<HTMLElement>('button, a, [role="button"]')).find(b => {
+          const text = (b.textContent || '').trim().toLowerCase();
+          return text === 'apply for this job' || text === 'apply now' || text === 'apply for position' || text === 'apply';
+        });
+
+        if (applyBtn) {
+          applyBtn.click();
+          await new Promise(r => setTimeout(r, 700));
+          fields = detectFormFields();
+        }
+      }
+
+      sendResponse({ success: true, payload: { jd, fields } });
+    })();
     return true;
   }
 

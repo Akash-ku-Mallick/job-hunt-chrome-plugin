@@ -27,6 +27,19 @@ export function detectFormFields(): FormField[] {
     const name = el.getAttribute('name') || el.id || '';
     const placeholder = el.getAttribute('placeholder') || '';
     const required = el.hasAttribute('required') || el.getAttribute('aria-required') === 'true';
+
+    // Anti-spam & Honeypot detection (e.g. BambooHR "Please leave this field blank")
+    const isHoneypot =
+      label.toLowerCase().includes('leave this field blank') ||
+      label.toLowerCase().includes('do not fill') ||
+      name.toLowerCase().includes('nickname_hp') ||
+      name.toLowerCase().includes('hpcsaf') ||
+      fieldId.toLowerCase().includes('recaptcha');
+
+    if (isHoneypot) {
+      return;
+    }
+
     const currentValue = el.value || '';
     const classification = classifyField(label, name, type);
 

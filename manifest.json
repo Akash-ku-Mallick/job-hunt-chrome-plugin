@@ -28,14 +28,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.greenhouse.io/*",
-        "https://*.lever.co/*",
-        "https://*.ashbyhq.com/*",
-        "https://*.myworkdayjobs.com/*",
-        "https://*.linkedin.com/jobs/*",
-        "https://*.indeed.com/*",
-        "https://*.huntingcube.ai/*",
-        "https://huntingcube.ai/*"
+        "<all_urls>"
       ],
       "js": [
         "content/content.js"
@@ -72,13 +65,6 @@
     "https://api.groq.com/*",
     "https://www.googleapis.com/*",
     "https://accounts.google.com/*",
-    "https://*.greenhouse.io/*",
-    "https://*.lever.co/*",
-    "https://*.ashbyhq.com/*",
-    "https://*.myworkdayjobs.com/*",
-    "https://*.linkedin.com/*",
-    "https://*.indeed.com/*",
-    "https://*.huntingcube.ai/*",
-    "https://huntingcube.ai/*"
+    "<all_urls>"
   ]
 }

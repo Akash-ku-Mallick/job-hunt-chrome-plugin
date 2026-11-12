@@ -38,6 +38,7 @@ export const ATS_DOMAINS = [
   'linkedin.com',
   'indeed.com',
   'huntingcube.ai',
+  'bamboohr.com',
 ] as const;
 
 export const FEEDBACK_FORM_URL = 'https://forms.gle/s619nBrHQmmfwhhd8';
@@ -73,6 +74,8 @@ export function buildFeedbackUrl(options?: {
       params.set(FORM_ENTRY_IDS.PORTAL, 'Workday (myworkdayjobs.com)');
     } else if (p.includes('linkedin') || p.includes('indeed')) {
       params.set(FORM_ENTRY_IDS.PORTAL, 'LinkedIn / Indeed');
+    } else if (p.includes('bamboohr') || p.includes('huntingcube')) {
+      params.set(FORM_ENTRY_IDS.PORTAL, 'Other');
     }
   }
 
