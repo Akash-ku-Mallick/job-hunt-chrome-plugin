@@ -450,6 +450,31 @@ async function handleImportProfile(e: Event) {
   }
 }
 
+async function ensureContentScriptReady(tabId: number): Promise<boolean> {
+  try {
+    const ping = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+    if (ping?.success) return true;
+  } catch {
+    // Content script not yet injected
+  }
+
+  // Attempt dynamic script injection via chrome.scripting for arbitrary job portals
+  try {
+    if (chrome.scripting?.executeScript) {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content/content.js'],
+      });
+      await new Promise(resolve => setTimeout(resolve, 150));
+      return true;
+    }
+  } catch (err) {
+    console.warn('[JobHunt AI] Dynamic script injection notice:', err);
+  }
+
+  return false;
+}
+
 async function handleScanPage() {
   autofillSuccessBanner?.classList.add('hidden');
   setStatus('Analyzing page...', 'loading');
@@ -460,6 +485,7 @@ async function handleScanPage() {
   }
 
   try {
+    await ensureContentScriptReady(tab.id);
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'ANALYZE_PAGE' });
     if (response?.success) {
       currentJd = response.payload.jd;
@@ -520,6 +546,12 @@ async function resolveFieldValues() {
         if (currentSettings.autoDeclineEeo) {
           field.suggestedValue = 'Decline to self-identify';
         }
+        break;
+      case 'NOTICE_PERIOD':
+        field.suggestedValue = 'Immediately';
+        break;
+      case 'SALARY_EXPECTATION':
+        field.suggestedValue = field.currentValue || '';
         break;
       default:
         field.suggestedValue = field.currentValue || '';
@@ -671,6 +703,8 @@ async function handleAutofill() {
   setStatus('Filling fields...', 'loading');
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) return;
+
+  await ensureContentScriptReady(tab.id);
 
   const fieldsToFill = detectedFields
     .filter(f => f.suggestedValue && f.suggestedValue.trim().length > 0)

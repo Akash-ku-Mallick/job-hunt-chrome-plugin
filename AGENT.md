@@ -45,10 +45,14 @@ To prevent documentation drift as this codebase evolves:
     "https://*.greenhouse.io/*",
     "https://*.lever.co/*",
     "https://*.ashbyhq.com/*",
-    "https://*.myworkdayjobs.com/*"
+    "https://*.myworkdayjobs.com/*",
+    "https://*.linkedin.com/*",
+    "https://*.indeed.com/*",
+    "https://*.huntingcube.ai/*",
+    "https://huntingcube.ai/*"
   ]
   ```
-  `<all_urls>` is prohibited unless explicitly requested by the user for arbitrary job board support.
+- **Universal ATS Dynamic Injection:** Uses `activeTab` + `scripting` API to dynamically inject `content.js` when users trigger analysis on new or unlisted job portals.
 - **API Key Lifecycle & Protection:**
   - Store the user's Groq API key strictly in sandboxed `chrome.storage.local`.
   - Keys are sent **only** as `Authorization: Bearer <KEY>` headers directly to `https://api.groq.com/*`.

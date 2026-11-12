@@ -36,6 +36,12 @@ export const ATS_CONFIGS: AtsSelectorConfig[] = [
     jdContainer: '.jobs-description__content, .jobs-box__html-content',
     formContainer: '.jobs-easy-apply-modal, .jobs-apply-form',
   },
+  {
+    name: 'HuntingCube',
+    hostPattern: 'huntingcube.ai',
+    jdContainer: 'main, article, .apply-card, div',
+    formContainer: '#apply-form, form.apply-card, form',
+  },
 ];
 
 export function getAtsConfig(hostname: string): AtsSelectorConfig | undefined {

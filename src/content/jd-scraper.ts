@@ -50,14 +50,24 @@ export function scrapeJobDescription(): JobDescriptionAnalysis {
   }
 
   // Extract Company Name if available
-  const companyEl = document.querySelector('[data-company-name], .company-name, .posting-headline h2');
+  const companyEl = document.querySelector('[data-company-name], .company-name, .posting-headline h2, [data-company]');
   if (companyEl && companyEl.textContent) {
     companyName = companyEl.textContent.trim();
   } else {
-    // Infer from hostname or title
-    const parts = document.title.split(/[-|–•]/);
-    if (parts.length > 1) {
-      companyName = parts[parts.length - 1].trim();
+    // Check sibling of h1 (e.g. HuntingCube, modern job portals)
+    const h1El = document.querySelector('h1');
+    if (h1El) {
+      const sib = h1El.nextElementSibling;
+      if (sib && sib.textContent && sib.textContent.trim().length > 0 && sib.textContent.trim().length < 50) {
+        companyName = sib.textContent.trim();
+      }
+    }
+    if (!companyName) {
+      // Infer from hostname or title
+      const parts = document.title.split(/[-|–•]/);
+      if (parts.length > 1) {
+        companyName = parts[parts.length - 1].trim();
+      }
     }
   }
 

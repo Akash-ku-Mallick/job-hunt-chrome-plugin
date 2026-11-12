@@ -36,7 +36,7 @@ export function classifyField(label: string, name: string, type: string): FieldC
   if (combined.includes('sponsorship') || combined.includes('require visa') || combined.includes('future sponsorship')) {
     return 'VISA_SPONSORSHIP';
   }
-  if (combined.includes('salary') || combined.includes('compensation') || combined.includes('expected pay')) {
+  if (combined.includes('salary') || combined.includes('compensation') || combined.includes('expected pay') || combined.includes('ctc') || combined.includes('lpa')) {
     return 'SALARY_EXPECTATION';
   }
   if (combined.includes('notice period') || combined.includes('start date') || combined.includes('earliest start')) {

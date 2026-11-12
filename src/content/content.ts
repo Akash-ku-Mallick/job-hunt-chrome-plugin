@@ -5,6 +5,11 @@ import { injectValue } from './dom-injector';
 console.log('[JobHunt AI] Content script active and listening.');
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === 'PING') {
+    sendResponse({ success: true });
+    return true;
+  }
+
   if (message.type === 'ANALYZE_PAGE') {
     const jd = scrapeJobDescription();
     const fields = detectFormFields();

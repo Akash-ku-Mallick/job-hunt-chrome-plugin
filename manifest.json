@@ -33,7 +33,9 @@
         "https://*.ashbyhq.com/*",
         "https://*.myworkdayjobs.com/*",
         "https://*.linkedin.com/jobs/*",
-        "https://*.indeed.com/*"
+        "https://*.indeed.com/*",
+        "https://*.huntingcube.ai/*",
+        "https://huntingcube.ai/*"
       ],
       "js": [
         "content/content.js"
@@ -55,7 +57,8 @@
     "storage",
     "activeTab",
     "tabs",
-    "identity"
+    "identity",
+    "scripting"
   ],
   "oauth2": {
     "client_id": "1005498450703-o8ifaa3rirua6f8hne4cbcmg949qp0vd.apps.googleusercontent.com",
@@ -74,6 +77,8 @@
     "https://*.ashbyhq.com/*",
     "https://*.myworkdayjobs.com/*",
     "https://*.linkedin.com/*",
-    "https://*.indeed.com/*"
+    "https://*.indeed.com/*",
+    "https://*.huntingcube.ai/*",
+    "https://huntingcube.ai/*"
   ]
 }

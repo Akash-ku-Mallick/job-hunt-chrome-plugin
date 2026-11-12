@@ -76,9 +76,29 @@ function resolveFieldLabel(el: HTMLElement): string {
 
   // 4. Preceding sibling or nearby heading/legend
   const prevSibling = el.previousElementSibling;
-  if (prevSibling && (prevSibling.tagName === 'LABEL' || prevSibling.tagName === 'SPAN')) {
+  if (prevSibling && (prevSibling.tagName === 'LABEL' || prevSibling.tagName === 'SPAN' || prevSibling.tagName === 'P')) {
     if (prevSibling.textContent) {
       return prevSibling.textContent.trim();
+    }
+  }
+
+  // 5. Parent wrapper's preceding sibling (e.g. HuntingCube / Tailwind wrapping input in span)
+  const parent = el.parentElement;
+  if (parent && (parent.tagName === 'SPAN' || parent.tagName === 'DIV')) {
+    const parentPrev = parent.previousElementSibling;
+    if (parentPrev && (parentPrev.tagName === 'LABEL' || parentPrev.tagName === 'SPAN' || parentPrev.tagName === 'P')) {
+      if (parentPrev.textContent) {
+        return parentPrev.textContent.trim();
+      }
+    }
+  }
+
+  // 6. Closest container label
+  const container = el.closest('.form-group, .field, .input-container, .apply-card, [data-slot="input-group"], [data-slot="select"]');
+  if (container) {
+    const containerLabel = container.querySelector('label');
+    if (containerLabel && containerLabel.textContent) {
+      return containerLabel.textContent.trim();
     }
   }
 

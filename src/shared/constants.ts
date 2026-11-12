@@ -37,6 +37,7 @@ export const ATS_DOMAINS = [
   'myworkdayjobs.com',
   'linkedin.com',
   'indeed.com',
+  'huntingcube.ai',
 ] as const;
 
 export const FEEDBACK_FORM_URL = 'https://forms.gle/s619nBrHQmmfwhhd8';
