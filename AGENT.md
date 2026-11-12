@@ -142,6 +142,7 @@ flowchart TD
 | `tsconfig.json` | 🟢 **Active & Verified** | Strict TypeScript compiler configuration. |
 | `vite.config.ts` | 🟢 **Active & Verified** | Multi-entry build configuration for Extension components. |
 | `icons/` | 🟢 **Active & Verified** | Generated icon assets (16, 32, 48, 128px). |
+| `scripts/package.js` | 🟢 **Active & Verified** | Cross-platform zip archiver for Chrome Web Store distribution packages. |
 | `src/shared/types.ts` | 🟢 **Active & Verified** | TypeScript types for messages, profiles, fields, and Groq responses. |
 | `src/shared/constants.ts` | 🟢 **Active & Verified** | Groq model identifiers, fallback lists, ATS selector maps, Google Form entry IDs & feedback URL builder. |
 | `src/background/service-worker.ts`| 🟢 **Active & Verified** | Ephemeral service worker, Groq API gateway proxy, side panel opener, and uninstall feedback URL handler. |

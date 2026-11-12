@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "package": "npm run build && powershell -Command \"if (-not (Test-Path release)) { New-Item -ItemType Directory -Path release }; Compress-Archive -Path dist/* -DestinationPath release/jobhunt-ai-v1.0.0.zip -Force\"",
+    "package": "npm run build && node scripts/package.js",
     "preview": "vite preview"
   },
   "keywords": [
@@ -22,8 +22,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/archiver": "^8.0.0",
     "@types/chrome": "^0.0.308",
     "@types/node": "^22.13.9",
+    "archiver": "^8.0.0",
     "autoprefixer": "^10.4.21",
     "lucide": "^0.477.0",
     "playwright": "^1.65.0",
