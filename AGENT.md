@@ -160,6 +160,7 @@ flowchart TD
 | `src/core/auth/google-auth.ts` | 🟢 **Active & Verified** | Native Google 1-click authentication via `chrome.identity.launchWebAuthFlow`. |
 | `tests/auth.test.ts` | 🟢 **Active & Verified** | Vitest unit tests for Google Auth session and storage lifecycle. |
 | `CHROMEWEBSTORE.md` | 🟢 **Active & Verified** | Single source of truth for Chrome Web Store publishing metadata. |
+| `docs/index.html` | 🟢 **Active & Verified** | SEO-optimized, unslop-crafted landing page ready for 1-click GitHub Pages hosting. |
 
 ---
 

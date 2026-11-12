@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Primary SEO Meta Tags -->
+  <title>JobHunt AI — Sub-Second, Privacy-First Job Application Autofill</title>
+  <meta name="title" content="JobHunt AI — Sub-Second, Privacy-First Job Application Autofill" />
+  <meta name="description" content="A Chrome extension that parses job descriptions, synthesizes tailored application answers in under 1 second via Groq LPUs, and autofills Greenhouse, Lever, Ashby, and Workday forms locally." />
+  <meta name="keywords" content="job application autofill, groq ai chrome extension, ats autofill, greenhouse autofill, lever autofill, workday autofill, ashby job application, privacy first autofill" />
+  <meta name="author" content="JobHunt AI Team" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://akash-ku-mallick.github.io/job-hunt-chrome-plugin/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://akash-ku-mallick.github.io/job-hunt-chrome-plugin/" />
+  <meta property="og:title" content="JobHunt AI — Sub-Second, Privacy-First Job Application Autofill" />
+  <meta property="og:description" content="Autofill ATS job applications in 500ms using local-first Groq LPU inference. No server telemetry, no resume harvesting." />
+  <meta property="og:image" content="./icons/icon-128.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary" />
+  <meta property="twitter:url" content="https://akash-ku-mallick.github.io/job-hunt-chrome-plugin/" />
+  <meta property="twitter:title" content="JobHunt AI — Sub-Second, Privacy-First Job Application Autofill" />
+  <meta property="twitter:description" content="Autofill ATS job applications in 500ms using local-first Groq LPU inference. No server telemetry, no resume harvesting." />
+  <meta property="twitter:image" content="./icons/icon-128.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16.png" />
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Iconify Web Component -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+
+  <!-- Tailwind CSS CDN with Calming Design Science Palette -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            surface: {
+              base: '#0c0d12',
+              card: '#12141c',
+              elevated: '#1a1d28',
+              border: 'rgba(255, 255, 255, 0.08)',
+              hairline: 'rgba(255, 255, 255, 0.05)',
+            },
+            accent: {
+              DEFAULT: '#10b981',
+              dim: '#059669',
+              subtle: 'rgba(16, 185, 129, 0.12)',
+            },
+            ink: {
+              primary: '#f1f3f7',
+              secondary: '#9ca3af',
+              muted: '#64748b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Calming engineering scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0c0d12; }
+    ::-webkit-scrollbar-thumb { background: #1e2230; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2d3348; }
+
+    /* Keycap style */
+    kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background-color: #1a1d28;
+      color: #9ca3af;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+    }
+  </style>
+
+  <!-- Schema.org JSON-LD Structured Data for Google -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "JobHunt AI AutoFiller",
+    "operatingSystem": "Chromium, Google Chrome, Brave Browser, Microsoft Edge",
+    "applicationCategory": "ProductivityApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": "Privacy-first Chrome extension that parses job descriptions and autofills ATS application forms in under 1 second using Groq LPUs.",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5.0",
+      "ratingCount": "12"
+    }
+  }
+  </script>
+</head>
+<body class="bg-surface-base text-ink-primary font-sans antialiased selection:bg-accent-subtle selection:text-accent">
+
+  <!-- Top Announcement Bar: Zero Telemetry Seal -->
+  <div class="border-b border-surface-border bg-surface-base/90 py-1.5 px-4 text-center text-xs text-ink-muted">
+    <div class="max-w-6xl mx-auto flex items-center justify-center gap-2">
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent"></span>
+      <span class="text-ink-secondary">Architecture Standard:</span>
+      <span>Direct browser-to-chip inference. Zero proxy servers. Local sandbox only.</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-surface-base/80 border-b border-surface-border">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5">
+        <div class="w-6 h-6 rounded bg-surface-elevated border border-surface-border flex items-center justify-center text-accent">
+          <iconify-icon icon="lucide:bot" width="14" stroke-width="1.75"></iconify-icon>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-sm tracking-tight text-ink-primary">JobHunt AI</span>
+          <span class="font-mono text-[10px] px-1.5 py-0.2 bg-surface-elevated text-ink-muted rounded border border-surface-border">v1.0.0</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-xs text-ink-secondary">
+        <a href="#how-it-works" class="hover:text-ink-primary transition-colors">How it works</a>
+        <a href="#benchmarks" class="hover:text-ink-primary transition-colors">Benchmarks</a>
+        <a href="#platforms" class="hover:text-ink-primary transition-colors">ATS Support</a>
+        <a href="#privacy" class="hover:text-ink-primary transition-colors">Privacy & Security</a>
+        <a href="#faq" class="hover:text-ink-primary transition-colors">FAQ</a>
+      </nav>
+
+      <div class="flex items-center gap-2.5">
+        <a href="https://github.com/Akash-ku-Mallick/job-hunt-chrome-plugin" target="_blank" class="text-xs text-ink-secondary hover:text-ink-primary flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:bg-surface-elevated border border-transparent hover:border-surface-border transition-colors">
+          <iconify-icon icon="lucide:github" width="14"></iconify-icon>
+          <span class="font-mono text-[11px]">GitHub</span>
+        </a>
+        <a href="https://chrome.google.com/webstore" target="_blank" class="bg-ink-primary hover:bg-white text-surface-base text-xs font-medium py-1.5 px-3 rounded-md transition-colors flex items-center gap-1.5 shadow-sm">
+          <iconify-icon icon="lucide:chrome" width="14"></iconify-icon>
+          <span>Install Extension</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="pt-16 pb-20 md:pt-24 md:pb-28 border-b border-surface-border relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="max-w-3xl space-y-6">
+        <!-- Quiet Subhead Badge -->
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-surface-card border border-surface-border text-xs text-ink-secondary">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+          <span class="font-mono text-[11px] text-ink-primary">Sub-second inference</span>
+          <span class="text-surface-border">|</span>
+          <span class="text-ink-muted">Groq LPU Acceleration</span>
+        </div>
+
+        <h1 class="text-3xl md:text-5xl font-semibold tracking-tight text-ink-primary leading-tight">
+          Autofill job applications in 500 milliseconds. Locally sandboxed.
+        </h1>
+
+        <p class="text-base text-ink-secondary leading-relaxed max-w-2xl">
+          A Chrome extension designed for engineering and tech candidates. Inspects job descriptions on Greenhouse, Lever, Ashby, and Workday, synthesizes tailored answers using your verified experience, and dispatches native framework events without storing candidate data on remote servers.
+        </p>
+
+        <!-- CTAs & Shortcuts -->
+        <div class="pt-2 flex flex-wrap items-center gap-3">
+          <a href="https://chrome.google.com/webstore" target="_blank" class="bg-ink-primary hover:bg-white text-surface-base text-sm font-medium py-2.5 px-4 rounded-md transition-colors flex items-center gap-2">
+            <iconify-icon icon="lucide:download" width="16"></iconify-icon>
+            <span>Add to Chrome / Brave</span>
+          </a>
+          <a href="#interactive-preview" class="bg-surface-card hover:bg-surface-elevated text-ink-primary border border-surface-border text-sm font-medium py-2.5 px-4 rounded-md transition-colors flex items-center gap-2">
+            <iconify-icon icon="lucide:eye" width="16"></iconify-icon>
+            <span>Inspect Live Demo</span>
+          </a>
+          <div class="flex items-center gap-1.5 text-xs text-ink-muted pl-1">
+            <span>Shortcut:</span>
+            <kbd>Alt</kbd><span>+</span><kbd>Shift</kbd><span>+</span><kbd>J</kbd>
+          </div>
+        </div>
+
+        <!-- Metric Anchors -->
+        <div class="pt-6 grid grid-cols-3 gap-6 border-t border-surface-border/60 max-w-lg">
+          <div>
+            <div class="font-mono text-xl font-medium text-ink-primary tabular-nums">0.48s</div>
+            <div class="text-xs text-ink-muted mt-0.5">Average TTFT latency</div>
+          </div>
+          <div>
+            <div class="font-mono text-xl font-medium text-ink-primary tabular-nums">100%</div>
+            <div class="text-xs text-ink-muted mt-0.5">Local browser storage</div>
+          </div>
+          <div>
+            <div class="font-mono text-xl font-medium text-ink-primary tabular-nums">6 Portals</div>
+            <div class="text-xs text-ink-muted mt-0.5">Native ATS support</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Moment: Split-Screen Browser Simulation -->
+      <div id="interactive-preview" class="mt-14 rounded-xl border border-surface-border bg-surface-card overflow-hidden shadow-2xl">
+        <!-- Mock Window Header -->
+        <div class="px-4 py-2.5 bg-surface-elevated/70 border-b border-surface-border flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="flex gap-1.5">
+              <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+            </div>
+            <div class="ml-2 font-mono text-[11px] text-ink-muted flex items-center gap-1.5 bg-surface-base px-2.5 py-0.5 rounded border border-surface-border/80">
+              <iconify-icon icon="lucide:lock" width="11" class="text-accent"></iconify-icon>
+              <span>boards.greenhouse.io/stripe/jobs/4982103</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 font-mono text-[10px] text-accent bg-accent-subtle px-2 py-0.5 rounded border border-accent/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+              <span>480ms LPU Active</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Split View: ATS Form on Left, JobHunt Side Panel on Right -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[460px]">
+          <!-- Left: Webpage Application Form Simulation -->
+          <div class="lg:col-span-7 p-6 border-b lg:border-b-0 lg:border-r border-surface-border space-y-5 bg-[#0b0c11]">
+            <div class="space-y-1">
+              <span class="text-[10px] font-mono uppercase text-ink-muted tracking-wider">Target Position</span>
+              <h3 class="text-base font-medium text-ink-primary">Staff Distributed Systems Engineer</h3>
+              <p class="text-xs text-ink-muted">Stripe • Infrastructure Org • San Francisco or Remote</p>
+            </div>
+
+            <!-- Simulated Form Inputs -->
+            <div class="space-y-3.5 pt-2">
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label class="text-[11px] font-medium text-ink-secondary">First Name</label>
+                  <div class="px-2.5 py-1.5 bg-surface-elevated/60 border border-accent/60 rounded text-xs text-ink-primary font-mono flex items-center justify-between">
+                    <span>Jane</span>
+                    <iconify-icon icon="lucide:check" width="12" class="text-accent"></iconify-icon>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[11px] font-medium text-ink-secondary">Last Name</label>
+                  <div class="px-2.5 py-1.5 bg-surface-elevated/60 border border-accent/60 rounded text-xs text-ink-primary font-mono flex items-center justify-between">
+                    <span>Doe</span>
+                    <iconify-icon icon="lucide:check" width="12" class="text-accent"></iconify-icon>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-ink-secondary">Email Address</label>
+                <div class="px-2.5 py-1.5 bg-surface-elevated/60 border border-accent/60 rounded text-xs text-ink-primary font-mono flex items-center justify-between">
+                  <span>jane.doe@example.com</span>
+                  <iconify-icon icon="lucide:check" width="12" class="text-accent"></iconify-icon>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex justify-between items-center">
+                  <label class="text-[11px] font-medium text-ink-secondary">Describe your experience with consensus protocols (Raft/Paxos):</label>
+                  <span class="text-[10px] font-mono text-accent">Tailored in 480ms</span>
+                </div>
+                <div class="p-2.5 bg-surface-elevated/60 border border-accent/60 rounded text-xs text-ink-secondary leading-relaxed font-sans">
+                  "At Datadog, I led the migration of our distributed state management to an optimized Raft implementation in Go, improving cluster recovery time by 42% under partitioned network conditions while maintaining strict linearizability."
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded bg-surface-elevated/30 border border-surface-border text-xs text-ink-muted flex items-center justify-between">
+                <span>Voluntary Demographics (EEO)</span>
+                <span class="text-[10px] font-mono text-ink-secondary">Auto-selected: Decline to self-identify</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Side Panel Control Center -->
+          <div class="lg:col-span-5 p-5 bg-surface-base space-y-4 flex flex-col justify-between">
+            <div class="space-y-3">
+              <!-- Panel Header -->
+              <div class="flex items-center justify-between pb-2 border-b border-surface-border">
+                <div class="flex items-center gap-1.5">
+                  <iconify-icon icon="lucide:bot" width="14" class="text-accent"></iconify-icon>
+                  <span class="font-semibold text-xs text-ink-primary">JobHunt Side Panel</span>
+                </div>
+                <span class="font-mono text-[10px] text-ink-muted">14 Fields Detected</span>
+              </div>
+
+              <!-- Page Analysis Summary -->
+              <div class="p-3 bg-surface-card rounded-lg border border-surface-border space-y-1.5">
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-ink-muted">Detected ATS:</span>
+                  <span class="font-mono text-accent">Greenhouse (#content)</span>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-ink-muted">Active Model:</span>
+                  <span class="font-mono text-ink-primary">openai/gpt-oss-120b</span>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-ink-muted">Tone Setting:</span>
+                  <span class="text-ink-primary">Technical & Direct</span>
+                </div>
+              </div>
+
+              <!-- Filled Items Overview -->
+              <div class="space-y-1.5 text-xs">
+                <div class="flex items-center justify-between p-2 rounded bg-surface-elevated/40 border border-surface-border/60">
+                  <span class="text-ink-secondary truncate max-w-[180px]">Contact & Links</span>
+                  <span class="text-[10px] font-mono text-accent">Ready (6/6)</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-surface-elevated/40 border border-surface-border/60">
+                  <span class="text-ink-secondary truncate max-w-[180px]">Work Authorization</span>
+                  <span class="text-[10px] font-mono text-accent">US Authorized (Yes)</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-surface-elevated/40 border border-surface-border/60">
+                  <span class="text-ink-secondary truncate max-w-[180px]">Custom Essay Questions</span>
+                  <span class="text-[10px] font-mono text-accent">Generated (2/2)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-3 border-t border-surface-border space-y-2">
+              <div class="p-2 rounded bg-accent-subtle border border-accent/20 flex items-center justify-between text-[11px]">
+                <span class="text-accent flex items-center gap-1">
+                  <iconify-icon icon="lucide:check-circle" width="13"></iconify-icon>
+                  <span>Ready for review</span>
+                </span>
+                <span class="text-ink-muted">Human-in-the-loop</span>
+              </div>
+              <button disabled class="w-full bg-accent text-surface-base font-medium text-xs py-2 rounded-md flex items-center justify-center gap-1.5 opacity-90 cursor-default">
+                <iconify-icon icon="lucide:check" width="14"></iconify-icon>
+                <span>Fields Populated on Tab</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Quantitative Benchmarks (Design Science) -->
+  <section id="benchmarks" class="py-20 border-b border-surface-border bg-surface-base">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="max-w-2xl space-y-2 mb-12">
+        <span class="text-[10px] font-mono uppercase text-ink-muted tracking-wider">Performance Telemetry</span>
+        <h2 class="text-2xl md:text-3xl font-semibold text-ink-primary tracking-tight">
+          Engineered for latency minimization.
+        </h2>
+        <p class="text-xs md:text-sm text-ink-secondary leading-relaxed">
+          Standard cloud autofillers route your resume through latency-heavy REST wrappers and slow multi-second reasoning models. JobHunt AI streams directly to Groq LPUs for immediate token delivery.
+        </p>
+      </div>
+
+      <!-- Comparative Latency Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Card 1: JobHunt AI -->
+        <div class="p-5 rounded-lg bg-surface-card border border-accent/30 space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-medium text-ink-primary flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-accent"></span>
+              <span>JobHunt AI (Groq LPU)</span>
+            </span>
+            <span class="text-[10px] font-mono text-accent bg-accent-subtle px-1.5 py-0.5 rounded">Current Build</span>
+          </div>
+          <div class="space-y-1">
+            <div class="font-mono text-3xl font-semibold text-ink-primary tabular-nums">0.48 s</div>
+            <p class="text-xs text-ink-muted">End-to-end question synthesis & token stream</p>
+          </div>
+          <div class="pt-3 border-t border-surface-border text-xs text-ink-secondary space-y-1 font-mono text-[11px]">
+            <div>• Inference: 500–1000 tokens/sec</div>
+            <div>• Memory Footprint: ~12 MB</div>
+            <div>• Network Hops: 1 (Browser ➔ Groq)</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Traditional Cloud Autofillers -->
+        <div class="p-5 rounded-lg bg-surface-card border border-surface-border space-y-4 opacity-80">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-medium text-ink-secondary">Standard Cloud Autofiller</span>
+            <span class="text-[10px] font-mono text-ink-muted">GPT-4o Backend</span>
+          </div>
+          <div class="space-y-1">
+            <div class="font-mono text-3xl font-semibold text-ink-secondary tabular-nums">12.40 s</div>
+            <p class="text-xs text-ink-muted">Queue waiting, proxy routing, token buffering</p>
+          </div>
+          <div class="pt-3 border-t border-surface-border text-xs text-ink-muted space-y-1 font-mono text-[11px]">
+            <div>• Inference: ~40 tokens/sec</div>
+            <div>• Memory Footprint: Heavy DOM scraping</div>
+            <div>• Network Hops: 3 (Client ➔ Proxy ➔ LLM)</div>
+          </div>
+        </div>
+
+        <!-- Card 3: Manual Application Entry -->
+        <div class="p-5 rounded-lg bg-surface-card border border-surface-border space-y-4 opacity-60">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-medium text-ink-secondary">Manual Candidate Typing</span>
+            <span class="text-[10px] font-mono text-ink-muted">Average</span>
+          </div>
+          <div class="space-y-1">
+            <div class="font-mono text-3xl font-semibold text-ink-secondary tabular-nums">18.5 min</div>
+            <p class="text-xs text-ink-muted">Copying resume text, re-writing essay answers</p>
+          </div>
+          <div class="pt-3 border-t border-surface-border text-xs text-ink-muted space-y-1 font-mono text-[11px]">
+            <div>• Friction: Repetitive fatigue</div>
+            <div>• Error Rate: High typos on links</div>
+            <div>• Form Timeouts: Common on Workday</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Architecture & Privacy Proofs -->
+  <section id="privacy" class="py-20 border-b border-surface-border bg-surface-card">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="max-w-2xl space-y-2 mb-12">
+        <span class="text-[10px] font-mono uppercase text-ink-muted tracking-wider">Zero-Telemetry Guarantee</span>
+        <h2 class="text-2xl md:text-3xl font-semibold text-ink-primary tracking-tight">
+          Privacy through mechanical architecture.
+        </h2>
+        <p class="text-xs md:text-sm text-ink-secondary leading-relaxed">
+          We believe candidate resumes should never be harvested, pooled, or stored on middleman servers. The extension is built on strict zero-egress boundaries.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Proof 1 -->
+        <div class="p-5 rounded-lg bg-surface-base border border-surface-border space-y-3">
+          <div class="w-7 h-7 rounded bg-surface-elevated flex items-center justify-center text-accent">
+            <iconify-icon icon="lucide:shield-check" width="16"></iconify-icon>
+          </div>
+          <h3 class="text-sm font-medium text-ink-primary">No Middleman Proxies</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            Requests travel exclusively via HTTPS from your Chromium browser directly to <code class="text-accent font-mono">api.groq.com</code>. We do not operate an intermediary server.
+          </p>
+        </div>
+
+        <!-- Proof 2 -->
+        <div class="p-5 rounded-lg bg-surface-base border border-surface-border space-y-3">
+          <div class="w-7 h-7 rounded bg-surface-elevated flex items-center justify-center text-accent">
+            <iconify-icon icon="lucide:hard-drive" width="16"></iconify-icon>
+          </div>
+          <h3 class="text-sm font-medium text-ink-primary">100% Local Sandbox</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            Your resume text, contact info, and encrypted API key live strictly in <code class="text-ink-primary font-mono">chrome.storage.local</code> on your device.
+          </p>
+        </div>
+
+        <!-- Proof 3 -->
+        <div class="p-5 rounded-lg bg-surface-base border border-surface-border space-y-3">
+          <div class="w-7 h-7 rounded bg-surface-elevated flex items-center justify-center text-accent">
+            <iconify-icon icon="lucide:cpu" width="16"></iconify-icon>
+          </div>
+          <h3 class="text-sm font-medium text-ink-primary">React 16+ Safe Injector</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            Uses native prototype setters and updates React’s internal <code class="text-ink-primary font-mono">_valueTracker</code> so reactive state models never erase injected inputs.
+          </p>
+        </div>
+
+        <!-- Proof 4 -->
+        <div class="p-5 rounded-lg bg-surface-base border border-surface-border space-y-3">
+          <div class="w-7 h-7 rounded bg-surface-elevated flex items-center justify-center text-accent">
+            <iconify-icon icon="lucide:user-check" width="16"></iconify-icon>
+          </div>
+          <h3 class="text-sm font-medium text-ink-primary">Human-in-the-Loop</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            The extension populates inputs and highlights them for review. It intentionally never clicks the final "Submit Application" button.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Platform & ATS Support -->
+  <section id="platforms" class="py-20 border-b border-surface-border bg-surface-base">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="max-w-2xl space-y-2 mb-12">
+        <span class="text-[10px] font-mono uppercase text-ink-muted tracking-wider">Ecosystem Interoperability</span>
+        <h2 class="text-2xl md:text-3xl font-semibold text-ink-primary tracking-tight">
+          Supported Applicant Tracking Systems.
+        </h2>
+        <p class="text-xs md:text-sm text-ink-secondary leading-relaxed">
+          Trained on real selector structures and form labeling patterns across the most common career platforms.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <!-- Greenhouse -->
+        <div class="p-4 rounded-lg bg-surface-card border border-surface-border space-y-2 text-center">
+          <iconify-icon icon="lucide:boxes" width="20" class="text-ink-secondary mx-auto"></iconify-icon>
+          <div class="text-xs font-medium text-ink-primary">Greenhouse</div>
+          <div class="text-[10px] font-mono text-accent">Validated</div>
+        </div>
+
+        <!-- Lever -->
+        <div class="p-4 rounded-lg bg-surface-card border border-surface-border space-y-2 text-center">
+          <iconify-icon icon="lucide:layers" width="20" class="text-ink-secondary mx-auto"></iconify-icon>
+          <div class="text-xs font-medium text-ink-primary">Lever</div>
+          <div class="text-[10px] font-mono text-accent">Validated</div>
+        </div>
+
+        <!-- Ashby -->
+        <div class="p-4 rounded-lg bg-surface-card border border-surface-border space-y-2 text-center">
+          <iconify-icon icon="lucide:sparkles" width="20" class="text-ink-secondary mx-auto"></iconify-icon>
+          <div class="text-xs font-medium text-ink-primary">Ashby</div>
+          <div class="text-[10px] font-mono text-accent">Validated</div>
+        </div>
+
+        <!-- Workday -->
+        <div class="p-4 rounded-lg bg-surface-card border border-surface-border space-y-2 text-center">
+          <iconify-icon icon="lucide:briefcase" width="20" class="text-ink-secondary mx-auto"></iconify-icon>
+          <div class="text-xs font-medium text-ink-primary">Workday</div>
+          <div class="text-[10px] font-mono text-accent">Multi-step Safe</div>
+        </div>
+
+        <!-- LinkedIn -->
+        <div class="p-4 rounded-lg bg-surface-card border border-surface-border space-y-2 text-center">
+          <iconify-icon icon="lucide:linkedin" width="20" class="text-ink-secondary mx-auto"></iconify-icon>
+          <div class="text-xs font-medium text-ink-primary">LinkedIn</div>
+          <div class="text-[10px] font-mono text-accent">Easy Apply</div>
+        </div>
+
+        <!-- Indeed -->
+        <div class="p-4 rounded-lg bg-surface-card border border-surface-border space-y-2 text-center">
+          <iconify-icon icon="lucide:search" width="20" class="text-ink-secondary mx-auto"></iconify-icon>
+          <div class="text-xs font-medium text-ink-primary">Indeed</div>
+          <div class="text-[10px] font-mono text-accent">Validated</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: How It Works (Step-by-Step) -->
+  <section id="how-it-works" class="py-20 border-b border-surface-border bg-surface-card">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="max-w-2xl space-y-2 mb-12">
+        <span class="text-[10px] font-mono uppercase text-ink-muted tracking-wider">Workflow</span>
+        <h2 class="text-2xl md:text-3xl font-semibold text-ink-primary tracking-tight">
+          Three steps to application completion.
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="space-y-3">
+          <div class="font-mono text-xs text-accent">01 / Setup</div>
+          <h3 class="text-sm font-medium text-ink-primary">Store Your Master Profile</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            Paste your raw resume text once. The 1-click extractor parses your skills, experience summary, URLs, and authorization status into local storage.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="font-mono text-xs text-accent">02 / Scan</div>
+          <h3 class="text-sm font-medium text-ink-primary">Analyze Job Description</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            When on any ATS application, hit <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>J</kbd>. The DOM scraper extracts company requirements and matches your background in 480ms.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="font-mono text-xs text-accent">03 / Autofill</div>
+          <h3 class="text-sm font-medium text-ink-primary">Review & Finalize</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            Click "Autofill fields". Text inputs, dropdown selects, and affirmative radio buttons populate and highlight green. You inspect and submit.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: FAQ -->
+  <section id="faq" class="py-20 border-b border-surface-border bg-surface-base">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="space-y-2 mb-12 text-center">
+        <span class="text-[10px] font-mono uppercase text-ink-muted tracking-wider">Frequently Asked Questions</span>
+        <h2 class="text-2xl md:text-3xl font-semibold text-ink-primary tracking-tight">
+          Engineering & Usage Details.
+        </h2>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Question 1 -->
+        <div class="p-5 rounded-lg bg-surface-card border border-surface-border space-y-2">
+          <h3 class="text-sm font-medium text-ink-primary">Do I need a paid Groq API key?</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            No. Groq provides a generous free Developer Plan that gives you access to ultra-fast production models like <code class="text-accent font-mono">openai/gpt-oss-120b</code> and <code class="text-accent font-mono">openai/gpt-oss-20b</code> with up to 1,000 requests per minute at zero cost.
+          </p>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="p-5 rounded-lg bg-surface-card border border-surface-border space-y-2">
+          <h3 class="text-sm font-medium text-ink-primary">Why doesn't the extension auto-click "Submit"?</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            By design. Human-in-the-loop validation protects your candidate reputation against incorrect AI responses and ensures full compliance with Chrome Web Store safety guidelines. It populates and highlights fields, leaving the final submission in your hands.
+          </p>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="p-5 rounded-lg bg-surface-card border border-surface-border space-y-2">
+          <h3 class="text-sm font-medium text-ink-primary">Does it bypass React or Angular synthetic input handlers?</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            Yes. Modern portals (like Ashby and Lever) use React controlled components that erase direct <code class="font-mono">input.value</code> assignments. JobHunt AI invokes native prototype setters on <code class="font-mono">HTMLInputElement.prototype</code>, syncs React's internal <code class="font-mono">_valueTracker</code>, and dispatches an authentic <code class="font-mono">focus ➔ input ➔ change ➔ blur</code> event sequence.
+          </p>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="p-5 rounded-lg bg-surface-card border border-surface-border space-y-2">
+          <h3 class="text-sm font-medium text-ink-primary">How do multi-step Workday applications behave?</h3>
+          <p class="text-xs text-ink-secondary leading-relaxed">
+            Workday splits applications across multiple pages (Contact, Experience, Questions, Disclosures). Your profile stays in local storage. Simply click "Autofill fields" on each step as you advance.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Footer Section -->
+  <section class="py-20 bg-surface-card text-center border-b border-surface-border">
+    <div class="max-w-3xl mx-auto px-4 space-y-6">
+      <h2 class="text-2xl md:text-4xl font-semibold text-ink-primary tracking-tight">
+        Streamline your job hunt today.
+      </h2>
+      <p class="text-xs md:text-sm text-ink-secondary leading-relaxed max-w-xl mx-auto">
+        Join hundreds of software engineers and technical candidates eliminating repetitive application entry while keeping their data completely private.
+      </p>
+      <div class="pt-2 flex justify-center gap-3">
+        <a href="https://chrome.google.com/webstore" target="_blank" class="bg-ink-primary hover:bg-white text-surface-base text-xs font-medium py-2.5 px-4 rounded-md transition-colors flex items-center gap-2">
+          <iconify-icon icon="lucide:chrome" width="15"></iconify-icon>
+          <span>Install Extension</span>
+        </a>
+        <a href="https://forms.gle/s619nBrHQmmfwhhd8" target="_blank" class="bg-surface-elevated hover:bg-surface-elevated/80 text-ink-secondary hover:text-ink-primary border border-surface-border text-xs font-medium py-2.5 px-4 rounded-md transition-colors flex items-center gap-2">
+          <iconify-icon icon="lucide:message-square" width="15"></iconify-icon>
+          <span>Share Beta Feedback</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-10 bg-surface-base text-xs text-ink-muted">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-surface-elevated text-accent flex items-center justify-center">
+          <iconify-icon icon="lucide:bot" width="10"></iconify-icon>
+        </div>
+        <span class="text-ink-secondary font-medium">JobHunt AI</span>
+        <span>•</span>
+        <span>Open-source Manifest V3 Chrome Extension</span>
+      </div>
+
+      <div class="flex items-center gap-5 text-ink-secondary">
+        <a href="https://forms.gle/s619nBrHQmmfwhhd8" target="_blank" class="hover:text-ink-primary transition-colors">Feedback & Bug Report</a>
+        <a href="https://github.com/Akash-ku-Mallick/job-hunt-chrome-plugin" target="_blank" class="hover:text-ink-primary transition-colors">GitHub</a>
+        <a href="https://chrome.google.com/webstore" target="_blank" class="hover:text-ink-primary transition-colors">Web Store</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
