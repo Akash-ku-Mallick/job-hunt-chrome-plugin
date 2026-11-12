@@ -1,7 +1,7 @@
 import { getUserProfile, saveUserProfile, getSettings, saveSettings } from '../core/profile/storage';
 import { getAuthUser, signInWithGoogle, signOutGoogle, getRedirectUri } from '../core/auth/google-auth';
 import { UserProfile, ExtensionSettings, FormField, JobDescriptionAnalysis, AuthUser } from '../shared/types';
-import { GROQ_MODELS } from '../shared/constants';
+import { GROQ_MODELS, FEEDBACK_FORM_URL, buildFeedbackUrl } from '../shared/constants';
 import { buildQuestionAnswerPrompt, buildResumeParsePrompt } from '../core/ai/prompts';
 
 let currentProfile: UserProfile;
@@ -69,6 +69,14 @@ const settingsForm = document.getElementById('settingsForm') as HTMLFormElement;
 const setApiKey = document.getElementById('setApiKey') as HTMLInputElement;
 const setModel = document.getElementById('setModel') as HTMLSelectElement;
 const setAutoDeclineEeo = document.getElementById('setAutoDeclineEeo') as HTMLInputElement;
+
+// Feedback & Toast Banner Elements
+const btnHeaderFeedback = document.getElementById('btnHeaderFeedback') as HTMLButtonElement | null;
+const btnSettingsFeedback = document.getElementById('btnSettingsFeedback') as HTMLButtonElement | null;
+const autofillSuccessBanner = document.getElementById('autofillSuccessBanner') as HTMLElement | null;
+const autofillCountText = document.getElementById('autofillCountText') as HTMLElement | null;
+const btnAutofillFeedback = document.getElementById('btnAutofillFeedback') as HTMLButtonElement | null;
+const btnCloseSuccessBanner = document.getElementById('btnCloseSuccessBanner') as HTMLButtonElement | null;
 
 // Status Message Helper with quiet indicator dot
 function setStatus(text: string, state: 'ready' | 'loading' | 'success' | 'error' = 'ready') {
@@ -320,6 +328,38 @@ function setupEventListeners() {
 
   btnScanPage.addEventListener('click', handleScanPage);
   btnAutofill.addEventListener('click', handleAutofill);
+
+  // Feedback Triggers
+  if (btnHeaderFeedback) {
+    btnHeaderFeedback.addEventListener('click', () => {
+      const url = buildFeedbackUrl({
+        portal: currentJd?.companyName || currentJd?.jobTitle || '',
+      });
+      chrome.tabs.create({ url });
+    });
+  }
+
+  if (btnSettingsFeedback) {
+    btnSettingsFeedback.addEventListener('click', () => {
+      chrome.tabs.create({ url: FEEDBACK_FORM_URL });
+    });
+  }
+
+  if (btnAutofillFeedback) {
+    btnAutofillFeedback.addEventListener('click', () => {
+      const url = buildFeedbackUrl({
+        portal: currentJd?.companyName || '',
+        rating: '5',
+      });
+      chrome.tabs.create({ url });
+    });
+  }
+
+  if (btnCloseSuccessBanner && autofillSuccessBanner) {
+    btnCloseSuccessBanner.addEventListener('click', () => {
+      autofillSuccessBanner.classList.add('hidden');
+    });
+  }
 }
 
 async function handleAutoParseResume() {
@@ -411,6 +451,7 @@ async function handleImportProfile(e: Event) {
 }
 
 async function handleScanPage() {
+  autofillSuccessBanner?.classList.add('hidden');
   setStatus('Analyzing page...', 'loading');
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) {
@@ -643,7 +684,12 @@ async function handleAutofill() {
     },
     (res) => {
       if (res?.success) {
-        setStatus(`Filled ${res.payload.count} fields`, 'success');
+        const count = res.payload.count || 0;
+        setStatus(`Filled ${count} fields`, 'success');
+        if (autofillSuccessBanner && autofillCountText) {
+          autofillCountText.textContent = String(count);
+          autofillSuccessBanner.classList.remove('hidden');
+        }
       } else {
         setStatus('Autofill error', 'error');
       }

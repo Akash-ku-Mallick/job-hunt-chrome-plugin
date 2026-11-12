@@ -1,10 +1,16 @@
 import { GroqClient } from '../core/ai/groq-client';
 import { getSettings } from '../core/profile/storage';
+import { FEEDBACK_FORM_URL } from '../shared/constants';
 
 // Enable opening the side panel when the extension toolbar icon is clicked
 chrome.runtime.onInstalled.addListener(async () => {
   if (chrome.sidePanel?.setPanelBehavior) {
     await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  }
+
+  // Set uninstall feedback URL to gather insights on uninstalls
+  if (chrome.runtime.setUninstallURL) {
+    chrome.runtime.setUninstallURL(FEEDBACK_FORM_URL);
   }
 });
 

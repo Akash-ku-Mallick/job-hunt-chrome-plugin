@@ -38,3 +38,51 @@ export const ATS_DOMAINS = [
   'linkedin.com',
   'indeed.com',
 ] as const;
+
+export const FEEDBACK_FORM_URL = 'https://forms.gle/s619nBrHQmmfwhhd8';
+export const GOOGLE_FORM_FULL_BASE_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSca_iRR7PG_ktB9JXoh7ViJMTcgxuF7B63o2Ek7DfXReK5fCA/viewform?usp=pp_url';
+
+export const FORM_ENTRY_IDS = {
+  RATING: 'entry.1077676075',
+  PORTAL: 'entry.1486671930',
+  HIGHLIGHTS: 'entry.1552338063',
+  ISSUES: 'entry.376855699',
+  FEATURE_REQUEST: 'entry.1848135271',
+  EMAIL: 'entry.363760863',
+} as const;
+
+export function buildFeedbackUrl(options?: {
+  portal?: string;
+  rating?: string;
+  notes?: string;
+}): string {
+  if (!options) return FEEDBACK_FORM_URL;
+
+  const params = new URLSearchParams();
+  if (options.portal) {
+    // Map domain to form option
+    const p = options.portal.toLowerCase();
+    if (p.includes('greenhouse')) {
+      params.set(FORM_ENTRY_IDS.PORTAL, 'Greenhouse (boards.greenhouse.io)');
+    } else if (p.includes('lever')) {
+      params.set(FORM_ENTRY_IDS.PORTAL, 'Lever (jobs.lever.co)');
+    } else if (p.includes('ashby')) {
+      params.set(FORM_ENTRY_IDS.PORTAL, 'Ashby (jobs.ashbyhq.com)');
+    } else if (p.includes('workday') || p.includes('myworkdayjobs')) {
+      params.set(FORM_ENTRY_IDS.PORTAL, 'Workday (myworkdayjobs.com)');
+    } else if (p.includes('linkedin') || p.includes('indeed')) {
+      params.set(FORM_ENTRY_IDS.PORTAL, 'LinkedIn / Indeed');
+    }
+  }
+
+  if (options.rating) {
+    params.set(FORM_ENTRY_IDS.RATING, options.rating);
+  }
+
+  if (options.notes) {
+    params.set(FORM_ENTRY_IDS.ISSUES, options.notes);
+  }
+
+  const query = params.toString();
+  return query ? `${GOOGLE_FORM_FULL_BASE_URL}&${query}` : FEEDBACK_FORM_URL;
+}

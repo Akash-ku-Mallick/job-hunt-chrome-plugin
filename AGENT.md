@@ -143,8 +143,8 @@ flowchart TD
 | `vite.config.ts` | 🟢 **Active & Verified** | Multi-entry build configuration for Extension components. |
 | `icons/` | 🟢 **Active & Verified** | Generated icon assets (16, 32, 48, 128px). |
 | `src/shared/types.ts` | 🟢 **Active & Verified** | TypeScript types for messages, profiles, fields, and Groq responses. |
-| `src/shared/constants.ts` | 🟢 **Active & Verified** | Groq model identifiers, fallback lists, and ATS selector maps. |
-| `src/background/service-worker.ts`| 🟢 **Active & Verified** | Ephemeral service worker, Groq API gateway proxy, side panel opener. |
+| `src/shared/constants.ts` | 🟢 **Active & Verified** | Groq model identifiers, fallback lists, ATS selector maps, Google Form entry IDs & feedback URL builder. |
+| `src/background/service-worker.ts`| 🟢 **Active & Verified** | Ephemeral service worker, Groq API gateway proxy, side panel opener, and uninstall feedback URL handler. |
 | `src/content/content.ts` | 🟢 **Active & Verified** | Content script entry point & message listener. |
 | `src/content/jd-scraper.ts` | 🟢 **Active & Verified** | Job Description extraction from Greenhouse, Lever, Ashby, and general DOM. |
 | `src/content/form-detector.ts` | 🟢 **Active & Verified** | Form input detection and label resolution cascade. |
