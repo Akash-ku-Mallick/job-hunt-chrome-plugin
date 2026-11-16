@@ -8,6 +8,7 @@ export type FieldCategory =
   | 'LINKEDIN_URL'
   | 'GITHUB_URL'
   | 'PORTFOLIO_URL'
+  | 'CURRENT_COMPANY'
   | 'WORK_AUTHORIZATION'
   | 'VISA_SPONSORSHIP'
   | 'SALARY_EXPECTATION'

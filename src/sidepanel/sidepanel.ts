@@ -462,7 +462,7 @@ async function ensureContentScriptReady(tabId: number): Promise<boolean> {
   try {
     if (chrome.scripting?.executeScript) {
       await chrome.scripting.executeScript({
-        target: { tabId },
+        target: { tabId, allFrames: true },
         files: ['content/content.js'],
       });
       await new Promise(resolve => setTimeout(resolve, 150));
@@ -527,9 +527,30 @@ async function resolveFieldValues() {
       case 'PHONE':
         field.suggestedValue = currentProfile.personal.phone;
         break;
-      case 'LOCATION':
-        field.suggestedValue = currentProfile.personal.location;
+      case 'LOCATION': {
+        const lowerLabel = field.label.toLowerCase();
+        if (lowerLabel.includes('country') && currentProfile.personal.location) {
+          const locParts = currentProfile.personal.location.split(',');
+          field.suggestedValue = locParts[locParts.length - 1].trim();
+        } else {
+          field.suggestedValue = currentProfile.personal.location;
+        }
         break;
+      }
+      case 'CURRENT_COMPANY':
+        field.suggestedValue = currentProfile.workHistory?.[0]?.company || '';
+        break;
+      case 'EXPERIENCE_YEARS': {
+        const yearsMatch = (currentProfile.experienceSummary || '').match(/(\d+)\+?\s*years?/i);
+        if (yearsMatch) {
+          field.suggestedValue = yearsMatch[1];
+        } else if (currentProfile.workHistory && currentProfile.workHistory.length > 0) {
+          field.suggestedValue = String(currentProfile.workHistory.length * 2);
+        } else {
+          field.suggestedValue = '3';
+        }
+        break;
+      }
       case 'LINKEDIN_URL':
         field.suggestedValue = currentProfile.personal.linkedinUrl;
         break;

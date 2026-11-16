@@ -48,9 +48,25 @@ export const ATS_CONFIGS: AtsSelectorConfig[] = [
     jdContainer: 'main, article, div',
     formContainer: 'form, .MuiFormControl-root',
   },
+  {
+    name: 'Zoho Recruit',
+    hostPattern: 'zohorecruit.com',
+    jdContainer: '.cw-jobdescription, #career-website-main, .cw-jobdetails-container',
+    formContainer: 'rec-form-component, portal-manual-apply, form',
+  },
 ];
 
 export function getAtsConfig(hostname: string): AtsSelectorConfig | undefined {
-  return ATS_CONFIGS.find(cfg => hostname.includes(cfg.hostPattern));
+  const matched = ATS_CONFIGS.find(cfg => hostname.includes(cfg.hostPattern));
+  if (matched) return matched;
+
+  // Generic DOM-based detection for white-labeled ATS portals (e.g. Zoho Recruit on custom subdomains)
+  if (typeof document !== 'undefined') {
+    if (document.querySelector('rec-form-component, portal-manual-apply, .cw-jobdescription, #career-website-main, career-website-detail')) {
+      return ATS_CONFIGS.find(cfg => cfg.name === 'Zoho Recruit');
+    }
+  }
+
+  return undefined;
 }
 

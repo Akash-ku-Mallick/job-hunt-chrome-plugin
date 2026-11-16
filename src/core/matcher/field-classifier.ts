@@ -27,14 +27,17 @@ export function classifyField(label: string, name: string, type: string): FieldC
   if (combined.includes('portfolio') || combined.includes('website') || combined.includes('personal site')) {
     return 'PORTFOLIO_URL';
   }
-  if (combined.includes('location') || combined.includes('city') || combined.includes('address')) {
-    return 'LOCATION';
-  }
   if (combined.includes('authorized to work') || combined.includes('work authorization') || combined.includes('legally eligible')) {
     return 'WORK_AUTHORIZATION';
   }
   if (combined.includes('sponsorship') || combined.includes('require visa') || combined.includes('future sponsorship')) {
     return 'VISA_SPONSORSHIP';
+  }
+  if (combined.includes('location') || combined.includes('city') || combined.includes('address') || combined.includes('country') || combined.includes('state') || combined.includes('zip') || combined.includes('postal')) {
+    return 'LOCATION';
+  }
+  if (combined.includes('employer') || combined.includes('current company') || combined.includes('organization') || combined.includes('current firm')) {
+    return 'CURRENT_COMPANY';
   }
   if (combined.includes('salary') || combined.includes('compensation') || combined.includes('expected pay') || combined.includes('ctc') || combined.includes('lpa')) {
     return 'SALARY_EXPECTATION';
@@ -42,7 +45,11 @@ export function classifyField(label: string, name: string, type: string): FieldC
   if (combined.includes('notice period') || combined.includes('start date') || combined.includes('earliest start')) {
     return 'NOTICE_PERIOD';
   }
-  if (combined.includes('years of experience') || combined.includes('how many years')) {
+  if (
+    combined.includes('years of experience') ||
+    combined.includes('how many years') ||
+    (combined.includes('experience') && (combined.includes('year') || combined.includes('total') || combined.includes('relevant')))
+  ) {
     return 'EXPERIENCE_YEARS';
   }
 

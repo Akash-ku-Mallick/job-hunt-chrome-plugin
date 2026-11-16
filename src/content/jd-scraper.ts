@@ -12,16 +12,31 @@ export function scrapeJobDescription(): JobDescriptionAnalysis {
   // 1. Try ATS specific container
   if (atsConfig?.jdContainer) {
     const el = document.querySelector(atsConfig.jdContainer);
-    if (el) {
+    if (el && el.textContent && el.textContent.trim().length > 100) {
       jdText = el.textContent || '';
     }
   }
 
-  // 2. Fallback heuristic: search for prominent main content or article
+  // 2. Generic ATS container selectors (Zoho Recruit, Workday, Greenhouse, Lever, etc.)
   if (!jdText || jdText.length < 200) {
-    const mainEl = document.querySelector('main, article, [role="main"]');
-    if (mainEl) {
-      jdText = mainEl.textContent || '';
+    const commonSelectors = [
+      '.cw-jobdescription',
+      '#career-website-main',
+      '.cw-jobdetails-container',
+      '.job-description',
+      '.job-details',
+      '[data-automation-id="jobPostingDescription"]',
+      '.jobs-description__content',
+      'main',
+      'article',
+      '[role="main"]',
+    ];
+    for (const sel of commonSelectors) {
+      const el = document.querySelector(sel);
+      if (el && el.textContent && el.textContent.trim().length > 200) {
+        jdText = el.textContent.trim();
+        break;
+      }
     }
   }
 
@@ -44,13 +59,13 @@ export function scrapeJobDescription(): JobDescriptionAnalysis {
   jdText = jdText.replace(/\s+/g, ' ').trim();
 
   // Extract Heading 1 as title candidate
-  const h1 = document.querySelector('h1');
+  const h1 = document.querySelector('h1, .cw-jobtitle h1, .cw-jobtitle h2, .cw-job-title');
   if (h1 && h1.textContent) {
     jobTitle = h1.textContent.trim();
   }
 
   // Extract Company Name if available
-  const companyEl = document.querySelector('[data-company-name], .company-name, .posting-headline h2, [data-company]');
+  const companyEl = document.querySelector('[data-company-name], .company-name, .posting-headline h2, [data-company], .cw-company-name, [data-zcqa="company_name"]');
   if (companyEl && companyEl.textContent) {
     companyName = companyEl.textContent.trim();
   } else {
@@ -63,10 +78,16 @@ export function scrapeJobDescription(): JobDescriptionAnalysis {
       }
     }
     if (!companyName) {
-      // Infer from hostname or title
+      // Infer from title: handles "Company - Title in Location" or "Title | Company"
       const parts = document.title.split(/[-|–•]/);
       if (parts.length > 1) {
-        companyName = parts[parts.length - 1].trim();
+        const first = parts[0].trim();
+        const last = parts[parts.length - 1].trim();
+        if (/ltd|inc|technologies|corp|tech|company|llc|labs/i.test(first) || first.length < last.length) {
+          companyName = first;
+        } else {
+          companyName = last;
+        }
       }
     }
   }

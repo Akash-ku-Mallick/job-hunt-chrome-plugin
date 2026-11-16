@@ -53,6 +53,14 @@ describe('Field Classifier Heuristics', () => {
     ).toBe('CUSTOM_ESSAY');
   });
 
+  it('classifies experience years and employer fields (e.g. Zoho Recruit)', () => {
+    expect(classifyField('Total work experience in years', 'rec-form_124086000000003179', 'text')).toBe('EXPERIENCE_YEARS');
+    expect(classifyField('Relevant work experience in years', 'rec-form_124086000000003205', 'textarea')).toBe('EXPERIENCE_YEARS');
+    expect(classifyField('Current Employer', 'rec-form_124086000000003181', 'text')).toBe('CURRENT_COMPANY');
+    expect(classifyField('Current Company / Organization', 'employer', 'text')).toBe('CURRENT_COMPANY');
+    expect(classifyField('Country', 'country', 'text')).toBe('LOCATION');
+  });
+
   it('falls back to UNKNOWN for unrecognized generic fields', () => {
     expect(classifyField('Miscellaneous Notes', 'notes_field', 'text')).toBe('UNKNOWN');
   });

@@ -28,15 +28,23 @@ export function detectFormFields(): FormField[] {
     const placeholder = el.getAttribute('placeholder') || '';
     const required = el.hasAttribute('required') || el.getAttribute('aria-required') === 'true';
 
-    // Anti-spam & Honeypot detection (e.g. BambooHR "Please leave this field blank")
-    const isHoneypot =
-      label.toLowerCase().includes('leave this field blank') ||
-      label.toLowerCase().includes('do not fill') ||
-      name.toLowerCase().includes('nickname_hp') ||
-      name.toLowerCase().includes('hpcsaf') ||
-      fieldId.toLowerCase().includes('recaptcha');
+    // Anti-spam, Honeypot, and Captcha / Search helper detection
+    const lowerLabel = label.toLowerCase();
+    const lowerName = name.toLowerCase();
+    const lowerPlaceholder = placeholder.toLowerCase();
 
-    if (isHoneypot) {
+    const isHoneypotOrNoise =
+      lowerLabel.includes('leave this field blank') ||
+      lowerLabel.includes('do not fill') ||
+      lowerLabel.includes('type below image') ||
+      lowerPlaceholder.includes('type below image') ||
+      lowerPlaceholder.includes('search country with dial code') ||
+      lowerName.includes('nickname_hp') ||
+      lowerName.includes('hpcsaf') ||
+      fieldId.toLowerCase().includes('recaptcha') ||
+      fieldId.toLowerCase().includes('captcha');
+
+    if (isHoneypotOrNoise) {
       return;
     }
 
@@ -61,60 +69,100 @@ export function detectFormFields(): FormField[] {
 function resolveFieldLabel(el: HTMLElement): string {
   // 1. Explicit <label for="id">
   if (el.id) {
-    const label = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
-    if (label && label.textContent) {
-      return label.textContent.trim();
+    try {
+      const label = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
+      if (label && label.textContent) {
+        return cleanLabelText(label.textContent);
+      }
+    } catch (_) {}
+  }
+
+  // 2. Zoho Recruit pattern: crc-label-<name> or crc-label-<name>_input or crc-label-<id>
+  const name = el.getAttribute('name') || '';
+  if (name) {
+    const zohoLabel =
+      document.getElementById(`crc-label-${name}`) ||
+      document.getElementById(`crc-label-${name}_input`) ||
+      document.querySelector(`label[id*="${name}"]`);
+    if (zohoLabel && zohoLabel.textContent) {
+      return cleanLabelText(zohoLabel.textContent);
+    }
+  }
+  if (el.id) {
+    const zohoLabel = document.getElementById(`crc-label-${el.id}`);
+    if (zohoLabel && zohoLabel.textContent) {
+      return cleanLabelText(zohoLabel.textContent);
     }
   }
 
-  // 2. Direct parent <label>
+  // 3. Direct parent <label>
   const parentLabel = el.closest('label');
   if (parentLabel && parentLabel.textContent) {
-    return parentLabel.textContent.trim();
+    return cleanLabelText(parentLabel.textContent);
   }
 
-  // 3. aria-label or aria-labelledby
+  // 4. aria-label or aria-labelledby
   const ariaLabel = el.getAttribute('aria-label');
   if (ariaLabel) {
-    return ariaLabel.trim();
+    return cleanLabelText(ariaLabel);
   }
 
   const ariaLabelledBy = el.getAttribute('aria-labelledby');
   if (ariaLabelledBy) {
     const labelledByEl = document.getElementById(ariaLabelledBy);
     if (labelledByEl && labelledByEl.textContent) {
-      return labelledByEl.textContent.trim();
+      return cleanLabelText(labelledByEl.textContent);
     }
   }
 
-  // 4. Preceding sibling or nearby heading/legend
+  // 5. Preceding sibling or nearby heading/legend
   const prevSibling = el.previousElementSibling;
   if (prevSibling && (prevSibling.tagName === 'LABEL' || prevSibling.tagName === 'SPAN' || prevSibling.tagName === 'P')) {
     if (prevSibling.textContent) {
-      return prevSibling.textContent.trim();
+      return cleanLabelText(prevSibling.textContent);
     }
   }
 
-  // 5. Parent wrapper's preceding sibling (e.g. HuntingCube / Tailwind wrapping input in span)
+  // 6. Closest row or field wrapper (Zoho Recruit, BambooHR, HuntingCube, Tailwind, Bootstrap)
+  const row = el.closest(
+    '.crc-form-row, .crc-form-field, .lyteField, .cxElementValue, .form-group, .form-row, .field, [class*="form-group"], [class*="form-row"], [class*="form-field"], .input-container, .apply-card, [data-slot="input-group"], [data-slot="select"]'
+  );
+  if (row) {
+    const rowLabel = row.querySelector('.crm-from-label, label, [class*="label"], [class*="title"]');
+    if (rowLabel && rowLabel.textContent) {
+      return cleanLabelText(rowLabel.textContent);
+    }
+  }
+
+  // 7. Parent wrapper's preceding sibling (e.g. HuntingCube / Tailwind wrapping input in span)
   const parent = el.parentElement;
   if (parent && (parent.tagName === 'SPAN' || parent.tagName === 'DIV')) {
     const parentPrev = parent.previousElementSibling;
     if (parentPrev && (parentPrev.tagName === 'LABEL' || parentPrev.tagName === 'SPAN' || parentPrev.tagName === 'P')) {
       if (parentPrev.textContent) {
-        return parentPrev.textContent.trim();
+        return cleanLabelText(parentPrev.textContent);
       }
     }
   }
 
-  // 6. Closest container label
-  const container = el.closest('.form-group, .field, .input-container, .apply-card, [data-slot="input-group"], [data-slot="select"]');
-  if (container) {
-    const containerLabel = container.querySelector('label');
-    if (containerLabel && containerLabel.textContent) {
-      return containerLabel.textContent.trim();
+  // 8. File upload component label detection (Resume, CV, Documents)
+  if ((el as HTMLInputElement).type === 'file') {
+    const fileContainer = el.closest('rec-file-upload-component, lyte-file-select-area, .crc-other-upload, [class*="upload"]');
+    if (fileContainer && fileContainer.textContent) {
+      const text = fileContainer.textContent.toLowerCase();
+      if (text.includes('resume') || text.includes('cv')) {
+        return 'Resume / CV';
+      }
     }
   }
 
   return '';
+}
+
+function cleanLabelText(raw: string): string {
+  return raw
+    .replace(/\*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
